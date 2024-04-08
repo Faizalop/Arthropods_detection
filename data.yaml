@@ -1,0 +1,12 @@
+train: /content/drive/MyDrive/Capstone_new/Data_New_Images_3/train/images
+val: /content/drive/MyDrive/Capstone_new/Data_New_Images_3/valid/images
+
+nc: 6
+names: ['MA', 'NT', 'OI', 'TS', 'WFT', 'WF']
+
+roboflow:
+  workspace: arthropodstrial
+  project: arthropods_newimages_training
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/arthropodstrial/arthropods_newimages_training/dataset/2
