@@ -21,7 +21,15 @@ st.write("Try uploading an image to detect the arthropods. Full quality images c
 st.sidebar.write("## Upload :gear:")
 
 
+#NMS function -  selecting the most confident bounding box detections and eliminating overlapping boxes that are less confident, 
+    #based on the provided IoU threshold, thus reducing the number of redundant boxes for the same object.
 
+#sort scores in descending, select box with highest score, calculate IOU(measure of overlap betwen 2 box), 
+    # removes box with high IOU i.e if selected box is > than certain threshold, it has high overlap & box is removed
+        # from consideration & repeats until there are no more box to consider.
+
+# function looks at bunch of boxes, picks best one & removes any other boxes that overlap too much with it.
+    # result is list of best box, name of object they contain and how confident function is that object is really.
 def nms(boxes, scores, iou_threshold, object_names):
     sorted_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
     selected_indices = []
@@ -42,6 +50,7 @@ def nms(boxes, scores, iou_threshold, object_names):
 
     return selected_boxes, selected_object_names, selected_confidence_scores
 
+#calculates the Intersection over Union (IoU), which is a measure of the overlap between two bounding boxes
 def iou(boxA, boxB):
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
@@ -60,6 +69,7 @@ def process_image(image_file, confidence_threshold):
     # Define the directory to save the uploaded image
     save_dir = '/content/drive/MyDrive/Capstone_new/Data_New_images/'
     
+    
     # Save the uploaded image to the specified directory
     saved_image_path = os.path.join(save_dir, image_file.name)
     with open(saved_image_path, 'wb') as f:
@@ -68,7 +78,7 @@ def process_image(image_file, confidence_threshold):
     # Now, you can use saved_image_path for further processing
     detection_model = AutoDetectionModel.from_pretrained(
         model_type='yolov8',
-        model_path='/content/drive/MyDrive/Capstone_new/runs/detect/train29/weights/best.pt',
+        model_path='/content/drive/MyDrive/Capstone_new/runs/detect/YOLOv8nwithP2/weights/best.pt',
         confidence_threshold=confidence_threshold,
         device='cpu'
     )
@@ -82,6 +92,8 @@ def process_image(image_file, confidence_threshold):
         overlap_width_ratio=0.3
     )
 
+    # reads an image, applies Non-Maximum Suppression to filter the object detections,
+        # and then draws red bounding boxes with a thickness of 2 pixels around the detected objects on the image.
     img = cv2.imread(saved_image_path, cv2.IMREAD_UNCHANGED)
     img_converted = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     numpydata = asarray(img_converted)
@@ -94,9 +106,18 @@ def process_image(image_file, confidence_threshold):
     for box, object_name, confidence in zip(selected_boxes, selected_names, selected_scores):
       x_min, y_min, x_max, y_max = map(int, box)  # Convert coordinates to integers
       cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)  # Green rectangle with thickness 2
-      # Display object name and confidence score
+
+      # Increase font size by changing the fontScale parameter
+      font_scale = 2.0  # Change this value to adjust font size
       text = f"{object_name}: {confidence:.2f}"
-      cv2.putText(image, text, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+      cv2.putText(image, text, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), 2)
+    
+    # for box, object_name, confidence in zip(selected_boxes, selected_names, selected_scores):
+    #   x_min, y_min, x_max, y_max = map(int, box)  # Convert coordinates to integers
+    #   cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)  # Green rectangle with thickness 2
+      # Display object name and confidence score
+      # text = f"{object_name}: {confidence:.2f}"
+      # cv2.putText(image, text, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
     cv2.imwrite('/content/drive/MyDrive/Capstone_new/result_with_nms.jpg', image)
 
     # visualize_object_predictions(
@@ -106,7 +127,7 @@ def process_image(image_file, confidence_threshold):
     #     file_name='result_701',
     #     export_format='jpeg'
     # )
-    # col1.write("Original Image :camera:")
+    col1.write("Original Image :camera:")
     col1.image(saved_image_path)
     result_image_path = '/content/drive/MyDrive/Capstone_new/result_with_nms.jpg'
     result_image = PILImage.open(result_image_path)
@@ -152,7 +173,7 @@ MAX_FILE_SIZE = 5 * 1024 * 1024
 col1, col2, col3 = st.columns(3)
 my_upload = st.sidebar.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
 
-confidence_threshold = st.sidebar.slider("Confidence Threshold", 0.35, 0.95, 0.35, 0.05,key="confidence_slider")
+confidence_threshold = st.sidebar.slider("Confidence Threshold", 0.05, 0.95, 0.05, 0.05,key="confidence_slider")
 iou_threshold = st.sidebar.slider("IoU Threshold", 0.1, 0.9, 0.1, 0.1, key="iou_slider")
 
 if st.button('Detect Arthropods'):
@@ -204,7 +225,7 @@ col = f'''<style>
 
 ColorSlider = st.markdown(col, unsafe_allow_html=True)
 
-if (confidence_threshold > 0.35 and confidence_threshold < 1.00) and (iou_threshold>0 and iou_threshold<1.00):
+if (confidence_threshold > 0.05 and confidence_threshold < 1.00) and (iou_threshold>0 and iou_threshold<1.00):
 
     if my_upload is not None:
           if my_upload.size > MAX_FILE_SIZE:
