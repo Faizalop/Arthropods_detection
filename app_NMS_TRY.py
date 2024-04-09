@@ -23,6 +23,13 @@ st.sidebar.write("## Upload :gear:")
 
 #NMS function -  selecting the most confident bounding box detections and eliminating overlapping boxes that are less confident, 
     #based on the provided IoU threshold, thus reducing the number of redundant boxes for the same object.
+
+#sort scores in descending, select box with highest score, calculate IOU(measure of overlap betwen 2 box), 
+    # removes box with high IOU i.e if selected box is > than certain threshold, it has high overlap & box is removed
+        # from consideration & repeats until there are no more box to consider.
+
+# function looks at bunch of boxes, picks best one & removes any other boxes that overlap too much with it.
+    # result is list of best box, name of object they contain and how confident function is that object is really.
 def nms(boxes, scores, iou_threshold, object_names):
     sorted_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
     selected_indices = []
