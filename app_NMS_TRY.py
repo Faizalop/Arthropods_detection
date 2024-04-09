@@ -21,7 +21,8 @@ st.write("Try uploading an image to detect the arthropods. Full quality images c
 st.sidebar.write("## Upload :gear:")
 
 
-
+#NMS function -  selecting the most confident bounding box detections and eliminating overlapping boxes that are less confident, 
+    #based on the provided IoU threshold, thus reducing the number of redundant boxes for the same object.
 def nms(boxes, scores, iou_threshold, object_names):
     sorted_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
     selected_indices = []
@@ -42,6 +43,7 @@ def nms(boxes, scores, iou_threshold, object_names):
 
     return selected_boxes, selected_object_names, selected_confidence_scores
 
+#calculates the Intersection over Union (IoU), which is a measure of the overlap between two bounding boxes
 def iou(boxA, boxB):
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
@@ -83,6 +85,8 @@ def process_image(image_file, confidence_threshold):
         overlap_width_ratio=0.3
     )
 
+    # reads an image, applies Non-Maximum Suppression to filter the object detections,
+        # and then draws red bounding boxes with a thickness of 2 pixels around the detected objects on the image.
     img = cv2.imread(saved_image_path, cv2.IMREAD_UNCHANGED)
     img_converted = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     numpydata = asarray(img_converted)
